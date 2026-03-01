@@ -1,0 +1,18 @@
+{
+  "name": "Qapla' - Learn Klingon",
+  "short_name": "Qapla'",
+  "description": "Build 1,000+ sentences with 80 pieces - Master the language of warriors",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f1a",
+  "theme_color": "#f97316",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/img/kling.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
