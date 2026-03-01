@@ -31,17 +31,16 @@ export default function QuizPhase({ questions, moduleColor, onComplete }: QuizPh
 
   // Auto-play audio for audio-recognition questions
   useEffect(() => {
-    if (currentQuestion && currentQuestion.type === 'audio-recognition' && !audioPlayed) {
+    if (currentQuestion && currentQuestion.type === 'audio-recognition') {
+      setAudioPlayed(false);
       setTimeout(() => {
         if (currentQuestion.klingonText) {
           audioService.speakWord(currentQuestion.klingonText);
           setAudioPlayed(true);
         }
       }, 500);
-    } else {
-      setAudioPlayed(false);
     }
-  }, [currentIndex, currentQuestion, audioPlayed]);
+  }, [currentIndex, currentQuestion]);
 
   // Handle option selection
   const handleOptionSelect = (index: number) => {
