@@ -63,15 +63,15 @@ export default function ModuleCard({
       {/* Header */}
       <div className="mb-4">
         <h3
-          className="text-2xl font-bold mb-1"
+          className="text-xl sm:text-2xl font-bold mb-1"
           style={{ color }}
         >
           Module {moduleId}: {titleEn}
         </h3>
-        <p className="text-text-secondary klingon-text text-base">
+        <p className="text-text-secondary klingon-text text-sm sm:text-base">
           {titleTlh}
         </p>
-        <p className="text-text-primary text-base mt-1">
+        <p className="text-text-primary text-sm sm:text-base mt-1">
           {theme}
         </p>
       </div>

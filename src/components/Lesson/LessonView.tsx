@@ -418,28 +418,28 @@ export default function LessonView({
       <div className="mb-6">
         <button
           onClick={onBack}
-          className="text-text-secondary hover:text-text-primary mb-4 flex items-center gap-2"
+          className="text-text-secondary hover:text-text-primary mb-4 flex items-center gap-2 text-sm sm:text-base"
         >
           <span>←</span> Back to Dashboard
         </button>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-text-primary">
+            <h1 className="text-xl sm:text-3xl font-bold text-text-primary">
               Module {moduleId}: {moduleData.titleEn}
             </h1>
-            <p className="text-xl text-text-secondary klingon-text">
+            <p className="text-base sm:text-xl text-text-secondary klingon-text">
               {moduleData.titleTlh}
             </p>
             {hasChunks && currentChunk && currentSubPhase !== 'quiz' && currentSubPhase !== 'sandbox' && currentSubPhase !== 'mixed-build' && (
-              <p className="text-lg text-text-secondary mt-1">
+              <p className="text-sm sm:text-lg text-text-secondary mt-1">
                 {currentChunk.title} ({currentChunkIndex + 1} of {moduleData.chunks!.length})
               </p>
             )}
           </div>
 
           {/* Phase Navigation Tabs */}
-          <div className="flex gap-2">
+          <div className="flex gap-1 sm:gap-2 flex-wrap">
             {(['learn', 'build', 'quiz', 'sandbox'] as PhaseType[]).map((phase) => {
               const isActive = hasChunks
                 ? (phase === 'learn' && currentSubPhase === 'learn') ||
@@ -466,7 +466,7 @@ export default function LessonView({
                   key={phase}
                   onClick={() => handlePhaseNavigation(phase)}
                   disabled={isDisabled}
-                  className="px-4 py-2 rounded-lg font-semibold text-sm capitalize transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold text-xs sm:text-sm capitalize transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                   style={{
                     backgroundColor: isActive ? moduleColor : `${moduleColor}20`,
                     color: isActive ? '#ffffff' : moduleColor,
