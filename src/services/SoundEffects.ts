@@ -24,6 +24,9 @@ class SoundEffects {
   private createSynths(): void {
     if (this.synth && this.polySynth) return;
 
+    // Set master volume to maximum
+    Tone.Destination.volume.value = 0; // 0 dB = maximum volume
+
     this.synth = new Tone.Synth({
       oscillator: { type: 'triangle' },
       envelope: {
@@ -32,6 +35,7 @@ class SoundEffects {
         sustain: 0.3,
         release: 0.1,
       },
+      volume: -6, // Slightly lower to prevent clipping
     }).toDestination();
 
     this.polySynth = new Tone.PolySynth(Tone.Synth, {
@@ -42,9 +46,10 @@ class SoundEffects {
         sustain: 0.3,
         release: 0.3,
       },
+      volume: -6,
     }).toDestination();
 
-    console.log('Synthesizers created and connected to destination');
+    console.log('Synthesizers created with volume:', this.synth.volume.value, 'Master volume:', Tone.Destination.volume.value);
   }
 
   /**
@@ -61,9 +66,16 @@ class SoundEffects {
       await Tone.start();
       this.initialized = true;
       console.log('Tone.js started successfully, context state:', Tone.context.state);
+      console.log('Sample rate:', Tone.context.sampleRate, 'Current time:', Tone.context.currentTime);
 
       // Create synths after context is running
       this.createSynths();
+
+      // Play a test tone to verify audio is working
+      if (this.synth) {
+        console.log('Playing test tone at', Tone.now());
+        this.synth.triggerAttackRelease('C5', '8n');
+      }
     } catch (error) {
       console.error('Failed to initialize Tone.js:', error);
     }
