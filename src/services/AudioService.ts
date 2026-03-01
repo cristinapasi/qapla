@@ -17,6 +17,7 @@ export interface IAudioService {
   playSFX(type: SoundEffectType): void;
   setMuted(muted: boolean): void;
   isMuted(): boolean;
+  initialize(): Promise<void>;
 }
 
 /**
@@ -78,6 +79,17 @@ class AudioService implements IAudioService {
    */
   isMuted(): boolean {
     return this.muted;
+  }
+
+  /**
+   * Initialize audio contexts (must be called after user interaction on mobile)
+   */
+  async initialize(): Promise<void> {
+    try {
+      await klingonTTS.initialize();
+    } catch (error) {
+      console.error('Failed to initialize audio:', error);
+    }
   }
 
   /**

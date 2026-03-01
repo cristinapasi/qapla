@@ -63,23 +63,24 @@ function App() {
 
   // Initialize audio on first user interaction (required for mobile)
   useEffect(() => {
-    const initAudio = async () => {
+    const handleFirstInteraction = async () => {
       try {
-        // Try to initialize audio context on first click/touch
-        const handleFirstInteraction = async () => {
-          await audioService.playSFX('click');
-          document.removeEventListener('click', handleFirstInteraction);
-          document.removeEventListener('touchstart', handleFirstInteraction);
-        };
-
-        document.addEventListener('click', handleFirstInteraction, { once: true });
-        document.addEventListener('touchstart', handleFirstInteraction, { once: true });
+        // Initialize both Tone.js and Web Audio API
+        await audioService.initialize();
+        await audioService.playSFX('click');
       } catch (error) {
         console.warn('Audio initialization failed:', error);
       }
     };
 
-    initAudio();
+    // Listen for first interaction
+    document.addEventListener('click', handleFirstInteraction, { once: true });
+    document.addEventListener('touchstart', handleFirstInteraction, { once: true });
+
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction);
+      document.removeEventListener('touchstart', handleFirstInteraction);
+    };
   }, []);
 
   // Handle sound mute toggle

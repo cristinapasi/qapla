@@ -158,6 +158,16 @@ class KlingonTTSService {
   }
 
   /**
+   * Initialize audio context (must be called after user interaction on mobile)
+   */
+  async initialize(): Promise<void> {
+    const ctx = this.getAudioContext();
+    if (ctx.state === 'suspended') {
+      await ctx.resume();
+    }
+  }
+
+  /**
    * Load an audio file and return its AudioBuffer
    * Handles glottal stop variants: tries '0' first, then 'z' as fallback
    */
