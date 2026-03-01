@@ -21,8 +21,10 @@ export default function LearnPhase({ vocabulary, moduleColor, onComplete, chunkT
   const [missedWords, setMissedWords] = useState<Set<number>>(new Set());
   const [isReviewRound, setIsReviewRound] = useState(false);
   const [reviewQueue, setReviewQueue] = useState<number[]>([]);
+  const [seenWords, setSeenWords] = useState<Set<number>>(new Set());
 
   const currentWord = vocabulary[currentIndex];
+  const isFirstTimeSeeingWord = !isReviewRound && !seenWords.has(currentIndex);
   const totalWords = vocabulary.length;
   const wordsCompleted = currentIndex + (isReviewRound ? totalWords : 0);
   const totalToComplete = isReviewRound ? totalWords + reviewQueue.length : totalWords;
@@ -37,12 +39,17 @@ export default function LearnPhase({ vocabulary, moduleColor, onComplete, chunkT
       setAnswerState('pending');
       setSelectedIndex(null);
 
+      // Mark word as seen
+      if (!isReviewRound) {
+        setSeenWords((prev) => new Set([...prev, currentIndex]));
+      }
+
       // Auto-play audio
       setTimeout(() => {
         audioService.speakWord(currentWord.tlh);
       }, 300);
     }
-  }, [currentIndex, currentWord, vocabulary]);
+  }, [currentIndex, currentWord, vocabulary, isReviewRound]);
 
   const handleOptionClick = (index: number) => {
     if (answerState !== 'pending') return;
@@ -171,6 +178,7 @@ export default function LearnPhase({ vocabulary, moduleColor, onComplete, chunkT
           const isSelected = selectedIndex === index;
           const isCorrect = index === correctIndex;
           const showFeedback = answerState !== 'pending';
+          const showHint = isFirstTimeSeeingWord && isCorrect;
 
           let bgColor = '#64748b30';
           let textColor = '#e2e8f0';
@@ -184,6 +192,10 @@ export default function LearnPhase({ vocabulary, moduleColor, onComplete, chunkT
             bgColor = '#ef444440';
             textColor = '#ef4444';
             borderColor = '#ef4444';
+          } else if (showHint) {
+            // Subtle hint for first-time words
+            bgColor = `${moduleColor}20`;
+            borderColor = `${moduleColor}60`;
           } else if (isSelected) {
             bgColor = `${moduleColor}40`;
             borderColor = moduleColor;
@@ -194,11 +206,12 @@ export default function LearnPhase({ vocabulary, moduleColor, onComplete, chunkT
               key={index}
               onClick={() => handleOptionClick(index)}
               disabled={answerState !== 'pending'}
-              className="px-8 py-6 rounded-xl font-semibold text-3xl transition-all border-2 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+              className={`px-8 py-6 rounded-xl font-semibold text-3xl transition-all border-2 disabled:cursor-not-allowed hover:scale-105 active:scale-95 ${showHint ? 'ring-2 ring-offset-2 ring-offset-bg-end' : ''}`}
               style={{
                 backgroundColor: bgColor,
                 color: textColor,
                 borderColor: borderColor,
+                ringColor: showHint ? moduleColor : undefined,
               }}
             >
               {option}
@@ -210,10 +223,10 @@ export default function LearnPhase({ vocabulary, moduleColor, onComplete, chunkT
       </div>
 
       {/* Word Type Hint */}
-      <div className="mt-6 text-center text-text-secondary text-sm">
+      <div className="mt-6 text-center text-text-secondary text-base">
         ({currentWord.type})
         {currentWord.usageHint && (
-          <div className="mt-1 text-xs">
+          <div className="mt-1 text-base">
             {currentWord.usageHint}
           </div>
         )}

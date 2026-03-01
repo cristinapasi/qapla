@@ -29,8 +29,16 @@ export default function QuizResults({
   return (
     <div className="max-w-2xl mx-auto text-center">
       {/* Result Icon */}
-      <div className="text-8xl mb-6">
-        {passed ? '🎉' : '📚'}
+      <div className="mb-6">
+        {passed ? (
+          <img
+            src="/img/very-happy-kling.png"
+            alt="Success!"
+            className="w-48 h-48 mx-auto animate-bounce object-contain"
+          />
+        ) : (
+          <div className="text-8xl">📚</div>
+        )}
       </div>
 
       {/* Title */}

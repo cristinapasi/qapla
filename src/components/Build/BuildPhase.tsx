@@ -40,6 +40,9 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
   const [streak, setStreak] = useState(0);
   const [totalXP, setTotalXP] = useState(0);
 
+  // Audio timeout tracking
+  const [audioTimeout, setAudioTimeout] = useState<NodeJS.Timeout | null>(null);
+
   const currentExercise = exerciseQueue[currentExerciseIndex];
   const totalExercises = exercises.length;
 
@@ -58,7 +61,15 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
       setAnswerState('pending');
       setShowFeedback(false);
     }
-  }, [currentExerciseIndex, currentExercise]);
+
+    // Cleanup: cancel any pending audio when exercise changes
+    return () => {
+      if (audioTimeout) {
+        clearTimeout(audioTimeout);
+        setAudioTimeout(null);
+      }
+    };
+  }, [currentExerciseIndex, currentExercise, audioTimeout]);
 
   // Handle tile selection from pool
   const handleTileSelect = (index: number) => {
@@ -98,9 +109,10 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
       audioService.playSFX('correct');
 
       // Play the sentence audio
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         audioService.speakSentence(currentExercise.correctAnswer);
       }, 300);
+      setAudioTimeout(timeout);
 
       // Calculate XP with streak bonus
       const xp = calculateXP(
@@ -126,9 +138,10 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
       setStreak(0);
 
       // Show correct answer
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         audioService.speakSentence(currentExercise.correctAnswer);
       }, 500);
+      setAudioTimeout(timeout);
     }
   };
 

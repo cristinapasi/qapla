@@ -24,7 +24,7 @@ export default function PhaseComplete({ title, xpEarned, moduleColor, onContinue
       {/* Celebration */}
       <div className="mb-8">
         <img
-          src="/img/kling.png"
+          src="/img/happy-kling.png"
           alt="Qapla'!"
           className="w-40 h-40 mx-auto mb-4 animate-bounce object-contain"
         />
