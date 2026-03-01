@@ -283,7 +283,7 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
                 {currentExercise.correctAnswer}
               </div>
               {currentExercise.literalTranslation && (
-                <div className="text-sm text-text-secondary italic mb-2">
+                <div className="text-lg text-text-secondary italic mb-2">
                   "{currentExercise.literalTranslation}"
                 </div>
               )}
@@ -318,7 +318,7 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
                 {currentExercise.correctAnswer}
               </div>
               {currentExercise.literalTranslation && (
-                <div className="text-sm text-text-secondary italic mb-2">
+                <div className="text-lg text-text-secondary italic mb-2">
                   "{currentExercise.literalTranslation}"
                 </div>
               )}
