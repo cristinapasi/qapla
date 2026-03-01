@@ -41,7 +41,7 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
   const [totalXP, setTotalXP] = useState(0);
 
   // Audio timeout tracking
-  const [audioTimeout, setAudioTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [audioTimeout, setAudioTimeout] = useState<number | null>(null);
 
   const currentExercise = exerciseQueue[currentExerciseIndex];
   const totalExercises = exercises.length;

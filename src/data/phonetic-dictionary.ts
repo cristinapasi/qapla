@@ -101,7 +101,6 @@ export const phoneticDictionary: Record<string, string> = {
 
   // Nouns
   jup: 'JOOP',
-  "be'": 'BEH',
   loD: 'LOHD',
   puq: 'POOKH',
   ghot: 'GHOT',
@@ -112,7 +111,6 @@ export const phoneticDictionary: Record<string, string> = {
   // Possessive suffixes
   wIj: 'WEEJ',
   lIj: 'LEEJ',
-  Daj: 'DAJ',
 
   // Fixed compounds
   tlhIngan: 'TLIN-GAHN',

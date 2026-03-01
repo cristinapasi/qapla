@@ -1,5 +1,5 @@
 /**
- * StorageService - Wrapper for window.storage API
+ * StorageService - Wrapper for localStorage API
  * Handles persistence of user progress across sessions
  */
 
@@ -23,10 +23,11 @@ class StorageService {
       };
 
       const value = JSON.stringify(serializable);
-      await window.storage.set(STORAGE_KEY, value);
+      window.localStorage.setItem(STORAGE_KEY, value);
     } catch (error) {
       console.error('Failed to save progress:', error);
       // Fail silently - app should continue working even if persistence fails
+      // This might fail due to quota exceeded or private browsing mode
     }
   }
 
@@ -35,13 +36,13 @@ class StorageService {
    */
   async loadProgress(): Promise<UserProgress | null> {
     try {
-      const stored = await window.storage.get(STORAGE_KEY);
+      const stored = window.localStorage.getItem(STORAGE_KEY);
 
-      if (!stored?.value) {
+      if (!stored) {
         return null;
       }
 
-      const parsed = JSON.parse(stored.value);
+      const parsed = JSON.parse(stored);
 
       // Convert Array back to Set
       return {
@@ -77,7 +78,7 @@ class StorageService {
    */
   async clearProgress(): Promise<void> {
     try {
-      await window.storage.remove(STORAGE_KEY);
+      window.localStorage.removeItem(STORAGE_KEY);
     } catch (error) {
       console.error('Failed to clear progress:', error);
     }

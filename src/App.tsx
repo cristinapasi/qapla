@@ -18,18 +18,25 @@ function App() {
   // Load progress on mount
   useEffect(() => {
     const loadProgress = async () => {
-      const loaded = await storageService.loadProgress();
+      try {
+        const loaded = await storageService.loadProgress();
 
-      if (loaded) {
-        setProgress(loaded);
-      } else {
-        // Create initial progress for new user
+        if (loaded) {
+          setProgress(loaded);
+        } else {
+          // Create initial progress for new user
+          const initial = storageService.createInitialProgress();
+          setProgress(initial);
+          await storageService.saveProgress(initial);
+        }
+      } catch (error) {
+        console.error('Failed to load progress:', error);
+        // If loading fails, create fresh progress
         const initial = storageService.createInitialProgress();
         setProgress(initial);
-        await storageService.saveProgress(initial);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     loadProgress();
@@ -96,6 +103,14 @@ function App() {
     setCurrentPhase(null);
   };
 
+  // Handle progress updates from lesson view
+  const handleUpdateProgress = (updater: (prev: UserProgress) => UserProgress) => {
+    setProgress((prev) => {
+      if (!prev) return null;
+      return updater(prev);
+    });
+  };
+
   if (loading || !progress) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -126,7 +141,7 @@ function App() {
             moduleId={currentModule}
             initialPhase={currentPhase}
             progress={progress}
-            onUpdateProgress={setProgress}
+            onUpdateProgress={handleUpdateProgress}
             onBack={handleBackToDashboard}
           />
         )}

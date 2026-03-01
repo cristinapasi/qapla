@@ -211,7 +211,6 @@ export default function LearnPhase({ vocabulary, moduleColor, onComplete, chunkT
                 backgroundColor: bgColor,
                 color: textColor,
                 borderColor: borderColor,
-                ringColor: showHint ? moduleColor : undefined,
               }}
             >
               {option}
