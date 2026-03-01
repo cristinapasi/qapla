@@ -61,15 +61,16 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
       setAnswerState('pending');
       setShowFeedback(false);
     }
+  }, [currentExerciseIndex, currentExercise]);
 
-    // Cleanup: cancel any pending audio when exercise changes
+  // Cleanup: cancel any pending audio when component unmounts or exercise changes
+  useEffect(() => {
     return () => {
       if (audioTimeout) {
         clearTimeout(audioTimeout);
-        setAudioTimeout(null);
       }
     };
-  }, [currentExerciseIndex, currentExercise, audioTimeout]);
+  }, [currentExerciseIndex, audioTimeout]);
 
   // Handle tile selection from pool
   const handleTileSelect = (index: number) => {
@@ -295,10 +296,10 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
               </button>
               {currentExercise.explanation && (
                 <div
-                  className="mt-4 p-3 rounded-lg"
+                  className="mt-4 p-4 rounded-lg"
                   style={{ backgroundColor: '#22c55e20' }}
                 >
-                  <p className="text-base text-text-primary font-semibold">
+                  <p className="text-lg text-text-primary font-semibold">
                     {currentExercise.explanation}
                   </p>
                 </div>
