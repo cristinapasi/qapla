@@ -47,6 +47,9 @@ export function calculateXP(
  */
 export const XP_REWARDS = {
   learnComplete: 15,
+  matchComplete: 10,
+  guidedBuildCorrect: 8,
+  guidedBuildStreak: 8,
   buildCorrect: 10,
   buildCorrectMaxStreak: 10,
   quizCorrect: 15,
@@ -55,4 +58,5 @@ export const XP_REWARDS = {
   sandboxMaxPerSession: 20,
   moduleComplete: 25,
   masterReview: 100,
+  peekPenalty: -2,
 };

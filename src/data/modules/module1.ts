@@ -20,6 +20,9 @@ const bricks: KlingonPiece[] = [
     category: 'brick',
     attachBehavior: 'standalone',
     usageHint: 'Used for eating food',
+    showExample: true,
+    exampleSentence: 'jISop',
+    exampleTranslation: 'I eat',
   },
   {
     id: 'v_tlhutlh',
@@ -42,6 +45,9 @@ const bricks: KlingonPiece[] = [
     category: 'brick',
     attachBehavior: 'standalone',
     usageHint: 'Motion away from speaker',
+    showExample: true,
+    exampleSentence: 'juHDaq jIjaH',
+    exampleTranslation: 'I go home',
   },
   {
     id: 'v_ghos',
@@ -53,6 +59,9 @@ const bricks: KlingonPiece[] = [
     category: 'brick',
     attachBehavior: 'standalone',
     usageHint: 'Motion toward speaker',
+    showExample: true,
+    exampleSentence: 'juHDaq maghoS',
+    exampleTranslation: 'we come home',
   },
   {
     id: 'v_ba',
@@ -161,6 +170,9 @@ const mortar: KlingonPiece[] = [
     category: 'mortar',
     attachBehavior: 'attach-before',
     usageHint: 'Subject prefix for first person singular intransitive',
+    showExample: true,
+    exampleSentence: 'jISop',
+    exampleTranslation: 'I eat',
   },
   {
     id: 'pfx_bi',
@@ -172,6 +184,9 @@ const mortar: KlingonPiece[] = [
     category: 'mortar',
     attachBehavior: 'attach-before',
     usageHint: 'Subject prefix for second person singular intransitive',
+    showExample: true,
+    exampleSentence: 'bISop',
+    exampleTranslation: 'you eat',
   },
   {
     id: 'pfx_ma',
@@ -183,6 +198,9 @@ const mortar: KlingonPiece[] = [
     category: 'mortar',
     attachBehavior: 'attach-before',
     usageHint: 'Subject prefix for first person plural intransitive',
+    showExample: true,
+    exampleSentence: 'majaH',
+    exampleTranslation: 'we go',
   },
   {
     id: 'pfx_vi',
@@ -194,6 +212,9 @@ const mortar: KlingonPiece[] = [
     category: 'mortar',
     attachBehavior: 'attach-before',
     usageHint: 'I do something to it/him/her',
+    showExample: true,
+    exampleSentence: 'bIQ vItlhutlh',
+    exampleTranslation: 'I drink water',
   },
   {
     id: 'sfx_daq',
@@ -205,6 +226,9 @@ const mortar: KlingonPiece[] = [
     category: 'mortar',
     attachBehavior: 'attach-after',
     usageHint: 'Attaches to nouns to show location',
+    showExample: true,
+    exampleSentence: 'juHDaq majaH',
+    exampleTranslation: 'we go home (to home)',
   },
   {
     id: 'sfx_a',
@@ -216,6 +240,9 @@ const mortar: KlingonPiece[] = [
     category: 'mortar',
     attachBehavior: 'attach-after',
     usageHint: 'Attaches to verbs to form questions',
+    showExample: true,
+    exampleSentence: "bISop'a'",
+    exampleTranslation: 'do you eat?',
   },
 ];
 

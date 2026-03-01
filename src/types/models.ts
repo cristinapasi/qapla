@@ -33,6 +33,9 @@ export interface KlingonPiece {
   category: "brick" | "mortar";  // content vs. structural
   attachBehavior: AttachBehavior;
   usageHint?: string;            // optional hint for flashcard back
+  showExample?: boolean;         // show example sentence in teach phase (smart mix)
+  exampleSentence?: string;      // example Klingon sentence using this piece
+  exampleTranslation?: string;   // English translation of example sentence
 }
 
 // ============================================================================
@@ -57,6 +60,19 @@ export interface BuildExercise {
   explanation?: string;             // optional grammar note shown after correct answer
 }
 
+export interface GuidedBuildExercise {
+  id: string;
+  moduleId: number;
+  englishPrompt: string;            // "I eat at the restaurant."
+  sentenceStructure: (BuildTile | null)[]; // null = blank position, BuildTile = prefilled
+  availableTiles: BuildTile[];      // tiles user can select (missing pieces + distractors)
+  correctAnswer: string;            // full expected output string
+  phonetic: string;
+  literalTranslation?: string;
+  explanation?: string;
+  blanksCount: number;              // how many tiles are missing (1-4)
+}
+
 // ============================================================================
 // QUIZ QUESTIONS
 // ============================================================================
@@ -79,6 +95,25 @@ export interface QuizQuestion {
 }
 
 // ============================================================================
+// MATCH PHASE (Recognition Game)
+// ============================================================================
+
+export type MatchRoundType =
+  | "pick-meaning"      // Show Klingon, pick English
+  | "pick-klingon"      // Show English, pick Klingon
+  | "pick-function";    // Show function description, pick Klingon (for prefixes/suffixes)
+
+export interface MatchQuestion {
+  id: string;
+  roundType: MatchRoundType;
+  prompt: string;               // The question/prompt to show
+  options: string[];            // 4 options
+  correctIndex: number;         // index of correct option (0-3)
+  klingonText?: string;         // if prompt is Klingon, store it here for audio
+  vocabularyId: string;         // which vocabulary piece this tests
+}
+
+// ============================================================================
 // CHUNKED LEARNING
 // ============================================================================
 
@@ -93,6 +128,8 @@ export interface ChunkProgress {
   moduleId: number;
   chunkId: string;
   learnCompleted: boolean;
+  matchCompleted: boolean;
+  guidedBuildCompleted: boolean;
   buildCompleted: boolean;
   lastAccessed: number;            // timestamp
 }

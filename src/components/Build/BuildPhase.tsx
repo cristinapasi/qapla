@@ -4,24 +4,26 @@
  */
 
 import { useState, useEffect } from 'react';
-import { BuildExercise, BuildTile } from '../../types/models';
+import { BuildExercise, BuildTile, KlingonPiece } from '../../types/models';
 import { validateAnswer, shuffleTiles, renderTiles } from '../../utils/tileRenderer';
 import { calculateXP, XP_REWARDS } from '../../utils/xpCalculator';
 import { audioService } from '../../services/AudioService';
 import TilePool from './TilePool';
 import ConstructionZone from './ConstructionZone';
+import PeekPanel from './PeekPanel';
 
 interface BuildPhaseProps {
   exercises: BuildExercise[];
   moduleColor: string;
   onComplete: (totalXP: number) => void;
-  chunkTitle?: string;       // Optional: for chunked learning modules
-  isMixedReview?: boolean;   // Optional: for mixed review phase
+  vocabulary?: KlingonPiece[];  // Optional: for peek panel
+  chunkTitle?: string;          // Optional: for chunked learning modules
+  isMixedReview?: boolean;      // Optional: for mixed review phase
 }
 
 type AnswerState = 'pending' | 'correct' | 'wrong';
 
-export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTitle, isMixedReview }: BuildPhaseProps) {
+export default function BuildPhase({ exercises, moduleColor, onComplete, vocabulary, chunkTitle, isMixedReview }: BuildPhaseProps) {
   // Exercise queue management
   const [exerciseQueue, setExerciseQueue] = useState<BuildExercise[]>([]);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
@@ -39,6 +41,10 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
   // Scoring
   const [streak, setStreak] = useState(0);
   const [totalXP, setTotalXP] = useState(0);
+
+  // Peek panel state
+  const [isPeekOpen, setIsPeekOpen] = useState(false);
+  const [hasPeekedThisExercise, setHasPeekedThisExercise] = useState(false);
 
   // Audio timeout tracking
   const [audioTimeout, setAudioTimeout] = useState<number | null>(null);
@@ -60,6 +66,7 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
       setConstructedTiles([]);
       setAnswerState('pending');
       setShowFeedback(false);
+      setHasPeekedThisExercise(false);  // Reset peek state for new exercise
     }
   }, [currentExerciseIndex, currentExercise]);
 
@@ -99,6 +106,14 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
     setSelectedTileIndices(newSelected);
   };
 
+  // Peek button handler
+  const handlePeekToggle = () => {
+    if (!isPeekOpen && !hasPeekedThisExercise) {
+      setHasPeekedThisExercise(true);
+    }
+    setIsPeekOpen(!isPeekOpen);
+  };
+
   // Check answer
   const handleCheckAnswer = () => {
     const isCorrect = validateAnswer(constructedTiles, currentExercise.correctAnswer);
@@ -116,11 +131,17 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
       setAudioTimeout(timeout);
 
       // Calculate XP with streak bonus
-      const xp = calculateXP(
+      let xp = calculateXP(
         XP_REWARDS.buildCorrect,
         streak,
         XP_REWARDS.buildCorrectMaxStreak
       );
+
+      // Apply peek penalty if used
+      if (hasPeekedThisExercise) {
+        xp += XP_REWARDS.peekPenalty;  // peekPenalty is -2
+      }
+
       setTotalXP(totalXP + xp);
       setStreak(streak + 1);
       setCompletedCount(completedCount + 1);
@@ -206,21 +227,35 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
             </p>
           </div>
 
-          {/* Streak indicator */}
-          {streak > 0 && (
-            <div
-              className="flex items-center gap-2 px-4 py-2 rounded-lg streak-indicator"
-              style={{ backgroundColor: `${moduleColor}40` }}
-            >
-              <span className="text-2xl">🔥</span>
-              <div>
-                <div className="text-xs text-text-secondary">Streak</div>
-                <div className="text-lg font-bold" style={{ color: moduleColor }}>
-                  {streak}
+          <div className="flex items-center gap-3">
+            {/* Peek button */}
+            {vocabulary && vocabulary.length > 0 && (
+              <button
+                onClick={handlePeekToggle}
+                className="px-4 py-2 rounded-lg bg-text-secondary bg-opacity-20 hover:bg-opacity-30 transition-all flex items-center gap-2"
+                aria-label="Peek at vocabulary"
+              >
+                <span className="text-xl">👁️</span>
+                <span className="text-sm font-semibold text-text-primary">Peek</span>
+              </button>
+            )}
+
+            {/* Streak indicator */}
+            {streak > 0 && (
+              <div
+                className="flex items-center gap-2 px-4 py-2 rounded-lg streak-indicator"
+                style={{ backgroundColor: `${moduleColor}40` }}
+              >
+                <span className="text-2xl">🔥</span>
+                <div>
+                  <div className="text-xs text-text-secondary">Streak</div>
+                  <div className="text-lg font-bold" style={{ color: moduleColor }}>
+                    {streak}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Progress Bar */}
@@ -283,7 +318,7 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
                 {currentExercise.correctAnswer}
               </div>
               {currentExercise.literalTranslation && (
-                <div className="text-lg text-text-secondary italic mb-2">
+                <div className="text-2xl text-text-primary italic mb-2 font-semibold">
                   "{currentExercise.literalTranslation}"
                 </div>
               )}
@@ -318,7 +353,7 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
                 {currentExercise.correctAnswer}
               </div>
               {currentExercise.literalTranslation && (
-                <div className="text-lg text-text-secondary italic mb-2">
+                <div className="text-2xl text-text-primary italic mb-2 font-semibold">
                   "{currentExercise.literalTranslation}"
                 </div>
               )}
@@ -383,6 +418,16 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, chunkTi
             {canCheck ? 'Check Answer' : 'Select all tiles to check'}
           </button>
         </div>
+      )}
+
+      {/* Peek Panel */}
+      {vocabulary && vocabulary.length > 0 && (
+        <PeekPanel
+          vocabulary={vocabulary}
+          moduleColor={moduleColor}
+          isOpen={isPeekOpen}
+          onClose={() => setIsPeekOpen(false)}
+        />
       )}
     </div>
   );

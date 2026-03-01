@@ -3,11 +3,15 @@ import { UserProgress, PhaseType, KlingonPiece, BuildExercise } from '../../type
 import { module1 } from '../../data/modules/module1';
 import module2 from '../../data/modules/module2';
 import LearnPhase from '../Learn/LearnPhase';
+import MatchPhase from '../Match/MatchPhase';
+import GuidedBuildPhase from '../GuidedBuild/GuidedBuildPhase';
 import BuildPhase from '../Build/BuildPhase';
 import QuizContainer from '../Quiz/QuizContainer';
 import SandboxPhase from '../Sandbox/SandboxPhase';
 import PhaseComplete from '../common/PhaseComplete';
 import { audioService } from '../../services/AudioService';
+import { generateGuidedBuildExercises } from '../../utils/guidedBuildGenerator';
+import { XP_REWARDS } from '../../utils/xpCalculator';
 
 interface LessonViewProps {
   moduleId: number;
@@ -31,7 +35,7 @@ const MODULE_COLORS = {
   5: '#ec4899',
 };
 
-type SubPhaseType = 'learn' | 'learn-complete' | 'build' | 'build-complete' | 'mixed-build' | 'quiz' | 'sandbox';
+type SubPhaseType = 'learn' | 'learn-complete' | 'match' | 'match-complete' | 'guided-build' | 'guided-build-complete' | 'build' | 'build-complete' | 'mixed-build' | 'quiz' | 'sandbox';
 
 export default function LessonView({
   moduleId,
@@ -114,6 +118,8 @@ export default function LessonView({
           moduleId,
           chunkId: currentChunk.id,
           learnCompleted: true,
+          matchCompleted: prev.chunkProgress[`${moduleId}-${currentChunk.id}`]?.matchCompleted || false,
+          guidedBuildCompleted: prev.chunkProgress[`${moduleId}-${currentChunk.id}`]?.guidedBuildCompleted || false,
           buildCompleted: prev.chunkProgress[`${moduleId}-${currentChunk.id}`]?.buildCompleted || false,
           lastAccessed: Date.now(),
         },
@@ -122,6 +128,60 @@ export default function LessonView({
 
     // Show completion celebration
     setCurrentSubPhase('learn-complete');
+  };
+
+  const handleMatchComplete = () => {
+    if (!hasChunks || !currentChunk) return;
+
+    audioService.playSFX('complete');
+
+    // Award 10 XP and mark chunk match as complete
+    onUpdateProgress((prev) => ({
+      ...prev,
+      xp: prev.xp + XP_REWARDS.matchComplete,
+      chunkProgress: {
+        ...prev.chunkProgress,
+        [`${moduleId}-${currentChunk.id}`]: {
+          moduleId,
+          chunkId: currentChunk.id,
+          learnCompleted: prev.chunkProgress[`${moduleId}-${currentChunk.id}`]?.learnCompleted || true,
+          matchCompleted: true,
+          guidedBuildCompleted: prev.chunkProgress[`${moduleId}-${currentChunk.id}`]?.guidedBuildCompleted || false,
+          buildCompleted: prev.chunkProgress[`${moduleId}-${currentChunk.id}`]?.buildCompleted || false,
+          lastAccessed: Date.now(),
+        },
+      },
+    }));
+
+    // Show completion celebration
+    setCurrentSubPhase('match-complete');
+  };
+
+  const handleGuidedBuildComplete = (xpEarned: number) => {
+    if (!hasChunks || !currentChunk) return;
+
+    audioService.playSFX('complete');
+
+    // Award XP and mark chunk guided build as complete
+    onUpdateProgress((prev) => ({
+      ...prev,
+      xp: prev.xp + xpEarned,
+      chunkProgress: {
+        ...prev.chunkProgress,
+        [`${moduleId}-${currentChunk.id}`]: {
+          moduleId,
+          chunkId: currentChunk.id,
+          learnCompleted: prev.chunkProgress[`${moduleId}-${currentChunk.id}`]?.learnCompleted || true,
+          matchCompleted: prev.chunkProgress[`${moduleId}-${currentChunk.id}`]?.matchCompleted || true,
+          guidedBuildCompleted: true,
+          buildCompleted: prev.chunkProgress[`${moduleId}-${currentChunk.id}`]?.buildCompleted || false,
+          lastAccessed: Date.now(),
+        },
+      },
+    }));
+
+    // Show completion celebration
+    setCurrentSubPhase('guided-build-complete');
   };
 
   const handleChunkBuildComplete = (xpEarned: number) => {
@@ -139,6 +199,8 @@ export default function LessonView({
           moduleId,
           chunkId: currentChunk.id,
           learnCompleted: prev.chunkProgress[`${moduleId}-${currentChunk.id}`]?.learnCompleted || true,
+          matchCompleted: prev.chunkProgress[`${moduleId}-${currentChunk.id}`]?.matchCompleted || true,
+          guidedBuildCompleted: prev.chunkProgress[`${moduleId}-${currentChunk.id}`]?.guidedBuildCompleted || true,
           buildCompleted: true,
           lastAccessed: Date.now(),
         },
@@ -168,6 +230,14 @@ export default function LessonView({
 
   // Handle continuing from celebration screens
   const handleLearnCelebrateComplete = () => {
+    setCurrentSubPhase('match');
+  };
+
+  const handleMatchCelebrateComplete = () => {
+    setCurrentSubPhase('guided-build');
+  };
+
+  const handleGuidedBuildCelebrateComplete = () => {
     setCurrentSubPhase('build');
   };
 
@@ -326,12 +396,50 @@ export default function LessonView({
           onContinue={handleLearnCelebrateComplete}
         />
       );
+    } else if (currentSubPhase === 'match' && currentChunk) {
+      phaseContent = (
+        <MatchPhase
+          vocabulary={vocabulary}
+          moduleColor={moduleColor}
+          onComplete={handleMatchComplete}
+          chunkTitle={currentChunk.title}
+        />
+      );
+    } else if (currentSubPhase === 'match-complete') {
+      phaseContent = (
+        <PhaseComplete
+          title="Match Phase"
+          xpEarned={XP_REWARDS.matchComplete}
+          moduleColor={moduleColor}
+          onContinue={handleMatchCelebrateComplete}
+        />
+      );
+    } else if (currentSubPhase === 'guided-build' && currentChunk) {
+      const guidedExercises = generateGuidedBuildExercises(getChunkExercises(), 8);
+      phaseContent = (
+        <GuidedBuildPhase
+          exercises={guidedExercises}
+          moduleColor={moduleColor}
+          onComplete={handleGuidedBuildComplete}
+          vocabulary={vocabulary}
+          chunkTitle={currentChunk.title}
+        />
+      );
+    } else if (currentSubPhase === 'guided-build-complete') {
+      phaseContent = (
+        <PhaseComplete
+          title="Guided Build"
+          moduleColor={moduleColor}
+          onContinue={handleGuidedBuildCelebrateComplete}
+        />
+      );
     } else if (currentSubPhase === 'build' && currentChunk) {
       phaseContent = (
         <BuildPhase
           exercises={getChunkExercises()}
           moduleColor={moduleColor}
           onComplete={handleChunkBuildComplete}
+          vocabulary={vocabulary}
           chunkTitle={currentChunk.title}
         />
       );
@@ -349,6 +457,7 @@ export default function LessonView({
           exercises={getMixedBuildExercises()}
           moduleColor={moduleColor}
           onComplete={handleMixedBuildComplete}
+          vocabulary={allVocabulary}
           isMixedReview={true}
         />
       );
@@ -388,6 +497,7 @@ export default function LessonView({
           exercises={moduleData.buildExercises}
           moduleColor={moduleColor}
           onComplete={handleBuildComplete}
+          vocabulary={allVocabulary}
         />
       );
     } else if (currentPhase === 'quiz') {

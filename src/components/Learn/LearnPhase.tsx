@@ -44,7 +44,7 @@ export default function LearnPhase({ vocabulary, moduleColor, onComplete, chunkT
         setSeenWords((prev) => new Set([...prev, currentIndex]));
       }
 
-      // Auto-play audio
+      // Auto-play audio for the main word
       setTimeout(() => {
         audioService.speakWord(currentWord.tlh);
       }, 300);
@@ -60,11 +60,6 @@ export default function LearnPhase({ vocabulary, moduleColor, onComplete, chunkT
       // Correct answer
       setAnswerState('correct');
       audioService.playSFX('correct');
-
-      // Move to next word after delay
-      setTimeout(() => {
-        moveToNext();
-      }, 800);
     } else {
       // Wrong answer
       setAnswerState('wrong');
@@ -77,11 +72,6 @@ export default function LearnPhase({ vocabulary, moduleColor, onComplete, chunkT
 
       // Replay audio and show correct answer
       audioService.speakWord(currentWord.tlh);
-
-      // Move to next after longer delay
-      setTimeout(() => {
-        moveToNext();
-      }, 1500);
     }
   };
 
@@ -157,6 +147,30 @@ export default function LearnPhase({ vocabulary, moduleColor, onComplete, chunkT
           {currentWord.tlh}
         </div>
 
+        {/* Example Sentence for Complex Pieces */}
+        {currentWord.showExample && currentWord.exampleSentence && (
+          <div className="mt-3 mb-3 p-3 rounded-lg bg-card-dark">
+            <div className="text-xs text-text-secondary mb-1">Example:</div>
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <button
+                onClick={() => audioService.speakWord(currentWord.exampleSentence!)}
+                className="text-lg hover:scale-110 transition-transform"
+                aria-label="Play example"
+              >
+                🔊
+              </button>
+              <div className="klingon-text text-lg text-text-primary">
+                {currentWord.exampleSentence}
+              </div>
+            </div>
+            {currentWord.exampleTranslation && (
+              <div className="text-sm text-text-secondary italic">
+                "{currentWord.exampleTranslation}"
+              </div>
+            )}
+          </div>
+        )}
+
         <p className="text-text-secondary text-lg">
           What does this mean?
         </p>
@@ -230,6 +244,22 @@ export default function LearnPhase({ vocabulary, moduleColor, onComplete, chunkT
           </div>
         )}
       </div>
+
+      {/* Next Button - Manual Advancement */}
+      {answerState !== 'pending' && (
+        <div className="mt-8 flex justify-center">
+          <button
+            onClick={moveToNext}
+            className="px-8 py-4 rounded-xl font-bold text-xl transition-all hover:scale-105 active:scale-95"
+            style={{
+              backgroundColor: moduleColor,
+              color: '#ffffff',
+            }}
+          >
+            Next →
+          </button>
+        </div>
+      )}
     </div>
   );
 }
