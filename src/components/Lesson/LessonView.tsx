@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { UserProgress, PhaseType, KlingonPiece, BuildExercise } from '../../types/models';
 import { module1 } from '../../data/modules/module1';
+import module2 from '../../data/modules/module2';
 import LearnPhase from '../Learn/LearnPhase';
 import BuildPhase from '../Build/BuildPhase';
 import QuizContainer from '../Quiz/QuizContainer';
@@ -18,6 +19,7 @@ interface LessonViewProps {
 
 const MODULE_DATA = {
   1: module1,
+  2: module2,
   // Add more modules as they're created
 };
 

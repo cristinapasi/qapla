@@ -54,6 +54,27 @@ function App() {
     }
   }, [progress?.xp]);
 
+  // Initialize audio on first user interaction (required for mobile)
+  useEffect(() => {
+    const initAudio = async () => {
+      try {
+        // Try to initialize audio context on first click/touch
+        const handleFirstInteraction = async () => {
+          await audioService.playSFX('click');
+          document.removeEventListener('click', handleFirstInteraction);
+          document.removeEventListener('touchstart', handleFirstInteraction);
+        };
+
+        document.addEventListener('click', handleFirstInteraction, { once: true });
+        document.addEventListener('touchstart', handleFirstInteraction, { once: true });
+      } catch (error) {
+        console.warn('Audio initialization failed:', error);
+      }
+    };
+
+    initAudio();
+  }, []);
+
   // Handle sound mute toggle
   const handleMuteToggle = () => {
     const newMuted = !soundMuted;

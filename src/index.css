@@ -158,9 +158,36 @@ button, .tile, .card {
   100% { opacity: 0.8; }
 }
 
-/* Mobile responsive font sizes */
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  body {
+    font-size: 18px;
+  }
+
+  /* Smaller Klingon text on mobile */
+  .klingon-text, .font-klingon {
+    font-size: 1.8em;
+  }
+
+  /* Adjust padding for mobile */
+  .max-w-md, .max-w-2xl, .max-w-4xl {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Make buttons more touchable */
+  button {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
 @media (max-width: 360px) {
-  html {
-    font-size: 14px;
+  body {
+    font-size: 16px;
+  }
+
+  .klingon-text, .font-klingon {
+    font-size: 1.6em;
   }
 }
