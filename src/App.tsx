@@ -65,11 +65,14 @@ function App() {
   useEffect(() => {
     const handleFirstInteraction = async () => {
       try {
+        console.log('Initializing audio on user interaction...');
         // Initialize both Tone.js and Web Audio API
         await audioService.initialize();
+        console.log('AudioService initialized');
         await audioService.playSFX('click');
+        console.log('Test sound played');
       } catch (error) {
-        console.warn('Audio initialization failed:', error);
+        console.error('Audio initialization failed:', error);
       }
     };
 

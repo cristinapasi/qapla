@@ -162,8 +162,11 @@ class KlingonTTSService {
    */
   async initialize(): Promise<void> {
     const ctx = this.getAudioContext();
+    console.log('KlingonTTS AudioContext state:', ctx.state);
     if (ctx.state === 'suspended') {
+      console.log('Resuming suspended AudioContext...');
       await ctx.resume();
+      console.log('AudioContext resumed, new state:', ctx.state);
     }
   }
 

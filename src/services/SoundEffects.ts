@@ -41,13 +41,18 @@ class SoundEffects {
    * Initialize audio context (must be called after user interaction)
    */
   private async ensureInitialized(): Promise<void> {
-    if (this.initialized) return;
+    if (this.initialized) {
+      console.log('Tone.js already initialized');
+      return;
+    }
 
     try {
+      console.log('Starting Tone.js...');
       await Tone.start();
       this.initialized = true;
+      console.log('Tone.js started successfully, context state:', Tone.context.state);
     } catch (error) {
-      console.warn('Failed to initialize Tone.js:', error);
+      console.error('Failed to initialize Tone.js:', error);
     }
   }
 
