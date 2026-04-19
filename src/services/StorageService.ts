@@ -1,50 +1,84 @@
 /**
- * StorageService - Wrapper for localStorage API
- * Handles persistence of user progress across sessions
+ * StorageService - Multi-user localStorage persistence
+ * Progress is namespaced per username: "qapla-progress-<username>"
+ * User profiles are stored in: "qapla-users"
  */
 
-import { UserProgress } from '../types/models';
+import { UserProgress, UserProfile } from '../types/models';
 
-const STORAGE_KEY = 'qapla-progress';
+const USERS_KEY = 'qapla-users';
+const progressKey = (username: string) => `qapla-progress-${username.toLowerCase()}`;
 
-/**
- * Storage Service for persisting user progress
- */
 class StorageService {
-  /**
-   * Save user progress to storage
-   */
-  async saveProgress(progress: UserProgress): Promise<void> {
+  // ============================================================================
+  // USER PROFILES
+  // ============================================================================
+
+  getUsers(): UserProfile[] {
     try {
-      // Convert Set to Array for JSON serialization
+      const raw = window.localStorage.getItem(USERS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  saveUsers(users: UserProfile[]): void {
+    try {
+      window.localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    } catch (error) {
+      console.error('Failed to save users:', error);
+    }
+  }
+
+  createUser(username: string): UserProfile {
+    const profile: UserProfile = {
+      username,
+      createdAt: Date.now(),
+      lastActiveAt: Date.now(),
+    };
+    const users = this.getUsers().filter(u => u.username !== username);
+    this.saveUsers([...users, profile]);
+    return profile;
+  }
+
+  touchUser(username: string): void {
+    const users = this.getUsers().map(u =>
+      u.username === username ? { ...u, lastActiveAt: Date.now() } : u
+    );
+    this.saveUsers(users);
+  }
+
+  deleteUser(username: string): void {
+    const users = this.getUsers().filter(u => u.username !== username);
+    this.saveUsers(users);
+    try {
+      window.localStorage.removeItem(progressKey(username));
+    } catch {}
+  }
+
+  // ============================================================================
+  // PROGRESS (per user)
+  // ============================================================================
+
+  async saveProgress(progress: UserProgress, username: string): Promise<void> {
+    try {
       const serializable = {
         ...progress,
         uniqueSentencesBuilt: Array.from(progress.uniqueSentencesBuilt),
       };
-
-      const value = JSON.stringify(serializable);
-      window.localStorage.setItem(STORAGE_KEY, value);
+      window.localStorage.setItem(progressKey(username), JSON.stringify(serializable));
+      this.touchUser(username);
     } catch (error) {
       console.error('Failed to save progress:', error);
-      // Fail silently - app should continue working even if persistence fails
-      // This might fail due to quota exceeded or private browsing mode
     }
   }
 
-  /**
-   * Load user progress from storage
-   */
-  async loadProgress(): Promise<UserProgress | null> {
+  async loadProgress(username: string): Promise<UserProgress | null> {
     try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-
-      if (!stored) {
-        return null;
-      }
-
+      const stored = window.localStorage.getItem(progressKey(username));
+      if (!stored) return null;
       const parsed = JSON.parse(stored);
-
-      // Convert Array back to Set
       return {
         ...parsed,
         uniqueSentencesBuilt: new Set(parsed.uniqueSentencesBuilt || []),
@@ -55,15 +89,12 @@ class StorageService {
     }
   }
 
-  /**
-   * Create initial progress state for new users
-   */
   createInitialProgress(): UserProgress {
     return {
       xp: 0,
       currentRank: 0,
       modulesCompleted: {},
-      chunkProgress: {},     // Initialize chunk progress tracking
+      chunkProgress: {},
       streak: 0,
       sentencesBuilt: 0,
       uniqueSentencesBuilt: new Set(),
@@ -73,17 +104,13 @@ class StorageService {
     };
   }
 
-  /**
-   * Clear all progress (for testing/reset)
-   */
-  async clearProgress(): Promise<void> {
+  async clearProgress(username: string): Promise<void> {
     try {
-      window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(progressKey(username));
     } catch (error) {
       console.error('Failed to clear progress:', error);
     }
   }
 }
 
-// Export singleton instance
 export const storageService = new StorageService();

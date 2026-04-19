@@ -5,13 +5,14 @@ interface HeaderProps {
   currentRank: number;
   soundMuted: boolean;
   onMuteToggle: () => void;
+  username: string;
+  onSwitchUser: () => void;
 }
 
-export default function Header({ xp, currentRank, soundMuted, onMuteToggle }: HeaderProps) {
+export default function Header({ xp, currentRank, soundMuted, onMuteToggle, username, onSwitchUser }: HeaderProps) {
   const rank = RANKS[currentRank];
   const nextRank = RANKS[currentRank + 1];
 
-  // Calculate progress to next rank
   const progressPercent = nextRank
     ? Math.min(100, ((xp - rank.xp) / (nextRank.xp - rank.xp)) * 100)
     : 100;
@@ -19,7 +20,7 @@ export default function Header({ xp, currentRank, soundMuted, onMuteToggle }: He
   return (
     <header className="w-full bg-bg-end bg-opacity-80 backdrop-blur-sm border-b border-text-secondary border-opacity-20">
       <div className="w-full max-w-app mx-auto px-4 py-4 flex items-center justify-between">
-        {/* Left: Title */}
+        {/* Left: Logo */}
         <div className="flex-shrink-0 flex items-center gap-3">
           <img
             src="/img/kling.png"
@@ -53,7 +54,6 @@ export default function Header({ xp, currentRank, soundMuted, onMuteToggle }: He
             </div>
           </div>
 
-          {/* XP Progress Bar */}
           {nextRank && (
             <div className="w-full bg-text-secondary bg-opacity-20 rounded-full h-2 overflow-hidden">
               <div
@@ -64,16 +64,27 @@ export default function Header({ xp, currentRank, soundMuted, onMuteToggle }: He
           )}
         </div>
 
-        {/* Right: Sound Toggle */}
-        <button
-          onClick={onMuteToggle}
-          className="flex-shrink-0 p-2 rounded-lg hover:bg-text-secondary hover:bg-opacity-20 transition-colors"
-          aria-label={soundMuted ? 'Unmute sounds' : 'Mute sounds'}
-        >
-          <span className="text-2xl">
-            {soundMuted ? '🔇' : '🔊'}
-          </span>
-        </button>
+        {/* Right: User + Sound */}
+        <div className="flex-shrink-0 flex items-center gap-2">
+          <button
+            onClick={onSwitchUser}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-text-secondary hover:bg-opacity-20 transition-colors"
+            aria-label="Switch user"
+            title="Switch user"
+          >
+            <span className="text-lg">👤</span>
+            <span className="text-sm text-text-secondary hidden sm:inline">{username}</span>
+          </button>
+          <button
+            onClick={onMuteToggle}
+            className="p-2 rounded-lg hover:bg-text-secondary hover:bg-opacity-20 transition-colors"
+            aria-label={soundMuted ? 'Unmute sounds' : 'Mute sounds'}
+          >
+            <span className="text-2xl">
+              {soundMuted ? '🔇' : '🔊'}
+            </span>
+          </button>
+        </div>
       </div>
     </header>
   );

@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { UserProgress, PhaseType, KlingonPiece, BuildExercise } from '../../types/models';
 import { module1 } from '../../data/modules/module1';
 import module2 from '../../data/modules/module2';
+import module3 from '../../data/modules/module3';
+import module4 from '../../data/modules/module4';
+import module5 from '../../data/modules/module5';
 import LearnPhase from '../Learn/LearnPhase';
 import MatchPhase from '../Match/MatchPhase';
 import GuidedBuildPhase from '../GuidedBuild/GuidedBuildPhase';
@@ -24,7 +27,9 @@ interface LessonViewProps {
 const MODULE_DATA = {
   1: module1,
   2: module2,
-  // Add more modules as they're created
+  3: module3,
+  4: module4,
+  5: module5,
 };
 
 const MODULE_COLORS = {
@@ -93,10 +98,14 @@ export default function LessonView({
     return moduleData.buildExercises.filter(ex => currentChunk.buildExerciseIds.includes(ex.id));
   };
 
-  // Get all exercises for mixed build (exercise 8 from module1)
+  // Get exercises for mixed build review — pick a sample from each chunk
   const getMixedBuildExercises = (): BuildExercise[] => {
-    // For Module 1, use exercise 8 (bIQ wItlhutlh) which uses vocabulary from multiple chunks
-    return moduleData.buildExercises.filter(ex => ex.id === 'm1_ex_008');
+    if (!hasChunks) return moduleData.buildExercises;
+    // Take the last exercise from each chunk as a cross-chunk review
+    return moduleData.chunks!.map(chunk => {
+      const lastId = chunk.buildExerciseIds[chunk.buildExerciseIds.length - 1];
+      return moduleData.buildExercises.find(ex => ex.id === lastId);
+    }).filter(Boolean) as BuildExercise[];
   };
 
   // ============================================================================

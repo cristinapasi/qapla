@@ -149,6 +149,14 @@ export interface UserProgress {
   wordConfidence: Record<string, number>;           // word ID → confidence 0-5 for spaced repetition
   quizScores: Record<number, number>;               // moduleId → best percentage
   lastUpdated: number;                              // timestamp
+  lastModule?: number;                              // resume: last module the user was in
+  lastPhase?: PhaseType;                            // resume: last phase the user was in
+}
+
+export interface UserProfile {
+  username: string;
+  createdAt: number;
+  lastActiveAt: number;
 }
 
 // ============================================================================

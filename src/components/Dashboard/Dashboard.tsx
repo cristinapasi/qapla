@@ -1,9 +1,9 @@
 import { UserProgress, PhaseType } from '../../types/models';
 import ModuleCard from './ModuleCard';
-import { module1 } from '../../data/modules/module1';
 
 interface DashboardProps {
   progress: UserProgress;
+  username: string;
   onStartLesson: (moduleId: number, phase: PhaseType) => void;
 }
 
@@ -45,23 +45,22 @@ const MODULE_INFO = [
   },
 ];
 
-export default function Dashboard({ progress, onStartLesson }: DashboardProps) {
-  // Check if module is unlocked
+export default function Dashboard({ progress, username, onStartLesson }: DashboardProps) {
   const isModuleUnlocked = (moduleId: number): boolean => {
     if (moduleId === 1) return true;
-
-    // Module N unlocks when Module N-1 quiz is passed with ≥70%
-    const prevModuleId = moduleId - 1;
-    const prevQuizScore = progress.quizScores[prevModuleId];
-
+    const prevQuizScore = progress.quizScores[moduleId - 1];
     return prevQuizScore !== undefined && prevQuizScore >= 70;
   };
 
-  // Get phase completion status
-  const getPhaseStatus = (moduleId: number, phase: PhaseType): boolean => {
-    const key = `${moduleId}-${phase}`;
-    return progress.modulesCompleted[key] || false;
-  };
+  const getPhaseStatus = (moduleId: number, phase: PhaseType): boolean =>
+    progress.modulesCompleted[`${moduleId}-${phase}`] || false;
+
+  // Resume: find the last place the user was
+  const resumeModule = progress.lastModule;
+  const resumePhase = progress.lastPhase;
+  const resumeInfo = resumeModule
+    ? MODULE_INFO.find(m => m.id === resumeModule)
+    : null;
 
   return (
     <div className="space-y-8">
@@ -76,13 +75,36 @@ export default function Dashboard({ progress, onStartLesson }: DashboardProps) {
           nuqneH!
         </h2>
         <p className="text-text-secondary text-lg">
-          Master the language of warriors
+          Welcome back, <span className="text-text-primary font-semibold">{username}</span>
         </p>
         <p className="text-text-secondary mt-2">
           Build <span className="text-xp-gold font-bold">1,000+ sentences</span> with{' '}
           <span className="text-success font-bold">80 pieces</span>
         </p>
       </div>
+
+      {/* Continue Card */}
+      {resumeInfo && resumePhase && (
+        <div
+          className="rounded-lg p-5 border-2 flex items-center justify-between gap-4"
+          style={{ borderColor: resumeInfo.color, backgroundColor: `${resumeInfo.color}15` }}
+        >
+          <div>
+            <p className="text-text-secondary text-sm mb-1">Continue where you left off</p>
+            <p className="text-text-primary font-bold text-lg">
+              Module {resumeInfo.id}: {resumeInfo.titleEn}
+            </p>
+            <p className="text-text-secondary text-sm capitalize">{resumePhase} phase</p>
+          </div>
+          <button
+            onClick={() => onStartLesson(resumeInfo.id, resumePhase)}
+            className="flex-shrink-0 px-5 py-3 rounded-lg font-bold text-white transition-all hover:opacity-90"
+            style={{ backgroundColor: resumeInfo.color }}
+          >
+            Continue →
+          </button>
+        </div>
+      )}
 
       {/* Modules Grid */}
       <div className="space-y-4">
@@ -93,11 +115,9 @@ export default function Dashboard({ progress, onStartLesson }: DashboardProps) {
         <div className="grid gap-4">
           {MODULE_INFO.map((moduleInfo) => {
             const unlocked = isModuleUnlocked(moduleInfo.id);
-
             const learnComplete = getPhaseStatus(moduleInfo.id, 'learn');
             const buildComplete = getPhaseStatus(moduleInfo.id, 'build');
             const quizComplete = getPhaseStatus(moduleInfo.id, 'quiz');
-            const sandboxUnlocked = quizComplete;
 
             return (
               <ModuleCard
@@ -111,7 +131,7 @@ export default function Dashboard({ progress, onStartLesson }: DashboardProps) {
                 learnComplete={learnComplete}
                 buildComplete={buildComplete}
                 quizComplete={quizComplete}
-                sandboxUnlocked={sandboxUnlocked}
+                sandboxUnlocked={quizComplete}
                 quizScore={progress.quizScores[moduleInfo.id]}
                 onStartPhase={(phase) => onStartLesson(moduleInfo.id, phase)}
               />
