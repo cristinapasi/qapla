@@ -73,7 +73,7 @@ export default function Header({ xp, currentRank, soundMuted, onMuteToggle, user
             title="Switch user"
           >
             <span className="text-lg">👤</span>
-            <span className="text-sm text-text-secondary hidden sm:inline">{username}</span>
+            <span className="text-sm text-text-secondary">{username}</span>
           </button>
           <button
             onClick={onMuteToggle}

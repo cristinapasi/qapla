@@ -124,9 +124,12 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, vocabul
       setShowFeedback(true);
       audioService.playSFX('correct');
 
-      // Play the sentence audio
-      const timeout = setTimeout(() => {
-        audioService.speakSentence(currentExercise.correctAnswer);
+      // Play the sentence audio word by word
+      const timeout = setTimeout(async () => {
+        const words = currentExercise.correctAnswer.trim().split(/\s+/);
+        for (const word of words) {
+          await audioService.speakWord(word);
+        }
       }, 300);
       setAudioTimeout(timeout);
 
@@ -160,8 +163,11 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, vocabul
       setStreak(0);
 
       // Show correct answer
-      const timeout = setTimeout(() => {
-        audioService.speakSentence(currentExercise.correctAnswer);
+      const timeout = setTimeout(async () => {
+        const words = currentExercise.correctAnswer.trim().split(/\s+/);
+        for (const word of words) {
+          await audioService.speakWord(word);
+        }
       }, 500);
       setAudioTimeout(timeout);
     }
@@ -189,9 +195,12 @@ export default function BuildPhase({ exercises, moduleColor, onComplete, vocabul
   };
 
   // Replay audio for current sentence
-  const handleReplayAudio = () => {
+  const handleReplayAudio = async () => {
     if (answerState === 'correct' || answerState === 'wrong') {
-      audioService.speakSentence(currentExercise.correctAnswer);
+      const words = currentExercise.correctAnswer.trim().split(/\s+/);
+      for (const word of words) {
+        await audioService.speakWord(word);
+      }
     }
   };
 

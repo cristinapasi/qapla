@@ -141,8 +141,11 @@ export default function GuidedBuildPhase({
       audioService.playSFX('correct');
 
       // Delay sentence audio to avoid interference with SFX
-      setTimeout(() => {
-        audioService.speakSentence(currentExercise.correctAnswer);
+      setTimeout(async () => {
+        const words = currentExercise.correctAnswer.trim().split(/\s+/);
+        for (const word of words) {
+          await audioService.speakWord(word);
+        }
       }, 300);
 
       // Award XP with streak bonus
@@ -187,8 +190,11 @@ export default function GuidedBuildPhase({
     setSelectedAvailableTile(null);
   };
 
-  const handleReplayAudio = () => {
-    audioService.speakSentence(currentExercise.correctAnswer);
+  const handleReplayAudio = async () => {
+    const words = currentExercise.correctAnswer.trim().split(/\s+/);
+    for (const word of words) {
+      await audioService.speakWord(word);
+    }
   };
 
   if (!currentExercise) {

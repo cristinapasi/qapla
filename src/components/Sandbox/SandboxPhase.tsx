@@ -91,11 +91,12 @@ export default function SandboxPhase({
     }
   };
 
-  // Play audio of constructed sentence
-  const handleHear = () => {
-    if (constructedText) {
-      audioService.speakSentence(constructedText);
-      audioService.playSFX('click');
+  // Play audio of constructed sentence piece by piece
+  const handleHear = async () => {
+    if (selectedPieces.length === 0) return;
+    audioService.playSFX('click');
+    for (const piece of selectedPieces) {
+      await audioService.speakWord(piece.tlh);
     }
   };
 

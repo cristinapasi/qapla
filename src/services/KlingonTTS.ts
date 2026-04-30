@@ -75,11 +75,8 @@ export function klingonToXIFAN(klingonText: string): string {
       case 'u':
         result += char;
         break;
-      case 'I':  // Uppercase I in Klingon
-        // Check if this I is at word boundary (prefixes jI, bI, vI need glottal stop)
-        const nextCharAfterI = i + 1 < klingonText.length ? klingonText[i + 1] : '';
-        const isWordBoundary = nextCharAfterI === '' || nextCharAfterI === ' ' || /[^a-zA-Z']/.test(nextCharAfterI);
-        result += isWordBoundary ? 'i0' : 'i';
+      case 'I':  // Uppercase I in Klingon — always gets glottal stop (it's always syllable-final)
+        result += 'i0';
         break;
       case 'b':
       case 'j':
@@ -247,25 +244,56 @@ class KlingonTTSService {
   }
 
   /**
+   * Try to load a token, falling back to splitting it at every possible
+   * boundary if the whole token has no audio file.
+   * Always tries longest match first to avoid false splits (e.g. q+oy0 instead of qoyz).
+   */
+  private async resolveTokenToBuffers(token: string): Promise<AudioBuffer[]> {
+    // Always try the full token first (loadAudioFile handles 0→z glottal fallback)
+    const full = await this.loadAudioFile(token);
+    if (full) return [full];
+
+    // Try splitting at each position, longest left part first
+    for (let split = token.length - 1; split >= 1; split--) {
+      const left = token.slice(0, split);
+      const right = token.slice(split);
+      const leftBuf = await this.loadAudioFile(left);
+      if (!leftBuf) continue;
+      const rightBuf = await this.loadAudioFile(right);
+      if (rightBuf) return [leftBuf, rightBuf];
+    }
+
+    // Try three-way splits as last resort
+    for (let a = token.length - 2; a >= 1; a--) {
+      for (let b = token.length - 1; b > a; b--) {
+        const p1 = token.slice(0, a);
+        const p2 = token.slice(a, b);
+        const p3 = token.slice(b);
+        const [b1, b2, b3] = await Promise.all([
+          this.loadAudioFile(p1),
+          this.loadAudioFile(p2),
+          this.loadAudioFile(p3),
+        ]);
+        if (b1 && b2 && b3) return [b1, b2, b3];
+      }
+    }
+
+    console.warn(`No audio found for token: ${token}`);
+    return [];
+  }
+
+  /**
    * Speak a Klingon word or phrase
    */
   async speak(klingonText: string): Promise<void> {
     try {
-      // Convert Klingon to XIFAN encoding
       const xifanText = klingonToXIFAN(klingonText);
+      const tokens = parseIntoSyllables(xifanText);
 
-      // Parse into syllables (words)
-      const syllables = parseIntoSyllables(xifanText);
-
-      // Load audio for each syllable
       const audioBuffers: AudioBuffer[] = [];
-      for (const syllable of syllables) {
-        const buffer = await this.loadAudioFile(syllable);
-        if (buffer) {
-          audioBuffers.push(buffer);
-        } else {
-          console.warn(`Missing audio for syllable: ${syllable} (from Klingon: ${klingonText})`);
-        }
+      for (const token of tokens) {
+        const buffers = await this.resolveTokenToBuffers(token);
+        audioBuffers.push(...buffers);
       }
 
       if (audioBuffers.length === 0) {
@@ -273,9 +301,7 @@ class KlingonTTSService {
         return;
       }
 
-      // Play the audio sequence
       await this.playAudioSequence(audioBuffers);
-
     } catch (error) {
       console.error('TTS playback error:', error);
     }
